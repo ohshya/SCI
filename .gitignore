@@ -1,0 +1,11 @@
+frontend/node_modules
+app/.env
+app/app.db
+__pycache__/
+*__pycache__/
+*/__pycache__/
+/*__pycache__/
+*.pyc
+*.pyo
+*.pyd
+codes.txt
