@@ -1,0 +1,14 @@
+fastapi_pagination
+pydantic_settings
+bcrypt
+fastapi-cli
+python-jose
+user-agents
+httpx
+fastapi
+uvicorn
+PyJWT
+tortoise-orm
+aerich
+aiosqlite
+pytz
