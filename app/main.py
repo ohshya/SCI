@@ -10,7 +10,6 @@ from routes.audit import auditRouter
 from routes.auth import authRouter
 from routes.system import systemRouter
 from routes.users import usersRouter
-from starlette.exceptions import HTTPException
 
 ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
 ALLOW_HEADERS = ["Authorization", "Content-Type", "Accept", "Cookie", "Origin"]

@@ -12,3 +12,4 @@ tortoise-orm
 aerich
 aiosqlite
 pytz
+tzdata

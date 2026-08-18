@@ -2,7 +2,6 @@ import hashlib
 import hmac
 from datetime import datetime
 
-from core.settings import TIMEZONE, settings
 from tortoise.fields import (
     SET_NULL,
     CharField,
@@ -12,6 +11,8 @@ from tortoise.fields import (
     TextField,
 )
 from tortoise.models import Model
+
+from core.settings import TIMEZONE, settings
 
 
 class AuditLog(Model):
@@ -40,7 +41,7 @@ class AuditLog(Model):
         await super().save(*args, **kwargs)
 
     def verify_integrity(self) -> bool:
-        user_id_val = self.user_id if self.user else ""  # pyright: ignore[reportAttributeAccessIssue]
+        user_id_val = self.user_id if self.user else ""
         data = f"{user_id_val}|{self.type}|{self.message}|{self.ip}|{self.error_code or ''}|{self.created_at.isoformat()}"
         expected_hash = hmac.new(
             settings.key.encode(), data.encode(), hashlib.sha256
