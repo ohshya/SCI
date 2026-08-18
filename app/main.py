@@ -1,7 +1,7 @@
+from pathlib import Path
 
 from core.database import init_db
 from core.exceptions import exception_handler
-from pathlib import Path
 from core.settings import settings
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
