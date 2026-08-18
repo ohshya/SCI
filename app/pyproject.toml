@@ -1,0 +1,9 @@
+[tool.pyright]
+typeCheckingMode = "basic"
+reportUnannotatedClassAttribute = false
+reportUninitializedInstanceVariable = false
+reportPrivateUsage = "none"
+reportMissingImports = "warning"
+reportMissingTypeStubs = "none"
+reportImportCycles = "none"
+reportAttributeAccessIssue = "none"

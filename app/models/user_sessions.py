@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from core.settings import TIMEZONE
 from tortoise.fields import CASCADE, CharField, DatetimeField, ForeignKeyField
 from tortoise.models import Model
+
+from core.settings import TIMEZONE
 
 
 class UserSession(Model):

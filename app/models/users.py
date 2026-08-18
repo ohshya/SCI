@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from core.settings import TIMEZONE
 from tortoise.fields import (
     BooleanField,
     CharField,
@@ -10,6 +9,8 @@ from tortoise.fields import (
     ReverseRelation,
 )
 from tortoise.models import Model
+
+from core.settings import TIMEZONE
 
 if TYPE_CHECKING:
     from models.audit_logs import AuditLog

@@ -1,16 +1,17 @@
-
-from core.database import init_db
-from core.exceptions import exception_handler
 from pathlib import Path
-from core.settings import settings
+
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException
+
+from core.database import init_db
+from core.exceptions import exception_handler
+from core.settings import settings
 from routes.audit import auditRouter
 from routes.auth import authRouter
 from routes.system import systemRouter
 from routes.users import usersRouter
-from starlette.exceptions import HTTPException
 
 ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
 ALLOW_HEADERS = ["Authorization", "Content-Type", "Accept", "Cookie", "Origin"]
