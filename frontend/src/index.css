@@ -3,3 +3,11 @@
 	themes: light --default;
 	exclude: rootscrollgutter;
 }
+
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: "#3569B9";
+    --color-secondary: "#494B4D";
+";
+}
