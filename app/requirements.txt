@@ -13,3 +13,4 @@ aerich
 aiosqlite
 pytz
 tzdata
+ulid-py
