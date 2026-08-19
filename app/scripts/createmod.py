@@ -6,10 +6,11 @@ sys.path.append(str(Path(__file__).parent.parent))
 import re
 from getpass import getpass
 
+from tortoise import Tortoise
+
 from core.database import TORTOISE_ORM
 from models.users import Users
 from security.helpers import hash_password
-from tortoise import Tortoise
 
 
 def validate_username(username: str) -> bool:
@@ -68,9 +69,9 @@ async def create_admin_user():
 
         print("\n" + "-" * 50)
         print("📋 Resumen:")
-        print(f"   Usuario: {username}")
-        print(f"   Rol: Administrador")
-        print(f"   Estado: Activo")
+        print(f"Usuario: {username}")
+        print("Rol: Administrador")
+        print("Estado: Activo")
         print("-" * 50)
         confirm = input("\n¿Crear este usuario? (s/N): ").strip().lower()
         if confirm != "s":
@@ -85,7 +86,7 @@ async def create_admin_user():
             is_admin=True,
         )
         await new_admin.save()
-        print(f"\n✅ Usuario administrador creado exitosamente!")
+        print("\n✅ Usuario administrador creado exitosamente!")
         print(f"   ID: {new_admin.id}")
         print(f"   Usuario: {new_admin.username}")
         print(f"   Rol: {'Administrador' if new_admin.is_admin else 'Usuario'}")

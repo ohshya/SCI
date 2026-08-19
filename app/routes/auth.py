@@ -2,12 +2,13 @@ import logging
 from datetime import datetime
 
 import jwt
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel
+
 from core.logger import log_event
 from core.settings import TIMEZONE
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from models.user_sessions import UserSession
 from models.users import Users
-from pydantic import BaseModel
 from security.auth import create_user_session, get_current_admin_user, get_current_user
 from security.cookies import remove_token_cookies, set_token_cookies
 from security.helpers import verify_password

@@ -18,7 +18,11 @@ from core.settings import TIMEZONE, settings
 class AuditLog(Model):
     id = IntField(pk=True)
     user = ForeignKeyField(
-        "models.Users", related_name="audit_logs", on_delete=SET_NULL, null=True
+        "models.Users",
+        related_name="audit_logs",
+        on_delete=SET_NULL,
+        null=True,
+        index=True,
     )
     type = CharField(max_length=50)
     message = TextField()

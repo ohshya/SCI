@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from core.logger import log_event
 from fastapi import APIRouter, Depends, HTTPException, Request
-from models.users import Users
 from pydantic import BaseModel, field_validator
+
+from core.logger import log_event
+from models.users import Users
 from security.auth import get_current_admin_user
 from security.helpers import hash_password
 
@@ -90,7 +91,7 @@ async def create_user(
         await new_user.save()
         await log_event(
             request,
-            "create",
+            "",
             f"Usuario creado: {new_user.username} (ID: {new_user.id})",
             user_id=new_user.id,
         )
