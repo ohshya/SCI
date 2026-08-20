@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js/jsx-runtime";
-import { splitProps } from "solid-js";
+import { splitProps, mergeProps } from "solid-js";
 
 interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
   loading?: boolean;
@@ -10,13 +10,17 @@ interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = (allProps: Props) => {
-  const [props, inputProps] = splitProps(allProps, [
+  // 1. mergeProps define un fallback seguro para value
+  const merged = mergeProps({ value: "" }, allProps);
+
+  const [props, inputProps] = splitProps(merged, [
     "label",
     "error",
     "icon",
     "loading",
     "required",
   ]);
+
   return (
     <fieldset class="fieldset w-full">
       <legend class="fieldset-legend">
@@ -32,6 +36,8 @@ export const Input = (allProps: Props) => {
           type="text"
           class="grow"
           {...inputProps}
+          // 2. Controlamos que si value llega como null/undefined pase un string vacío
+          value={inputProps.value ?? ""}
           disabled={props.loading}
         />
       </label>
