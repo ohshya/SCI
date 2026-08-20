@@ -10,6 +10,24 @@ export function LogsViewer() {
     LogsApi.getLogs,
   );
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'Fecha no disponible';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Fecha inválida';
+      return date.toLocaleString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch {
+      return 'Fecha inválida';
+    }
+  };
+
   return (
     <Show
       when={user()?.is_admin}
@@ -40,14 +58,14 @@ export function LogsViewer() {
                   <td>{log.id}</td>
                   <td>
                     <span class="badge badge-ghost badge-sm">
-                      {log.logType}
+                      {log.type}
                     </span>
                   </td>
                   <td class="whitespace-normal wrap-break-word max-w-xs">
                     {log.message}
                   </td>
-                  <td class="font-mono text-xs">{log.ipAddress}</td>
-                  <td>{new Date(log.date).toLocaleString()}</td>
+                  <td class="font-mono text-xs">{log.ip}</td>
+                  <td>{formatDate(log.created_at)}</td>
                 </tr>
               )}
             </For>
@@ -73,7 +91,14 @@ export function LogsViewer() {
           </button>
         </div>
       </div>
-      {logs()&& <pre>{JSON.stringify(logs(), null, 2)}</pre>}
+
+      {/* Debugging - Envuelto en un div para evitar texto suelto */}
+      {logs() && (
+        <div class="mt-4 p-4 bg-base-300 rounded-lg overflow-x-auto">
+          <h4 class="font-bold mb-2">Debug Info:</h4>
+          <pre class="text-xs">{JSON.stringify(logs(), null, 2)}</pre>
+        </div>
+      )}
     </Show>
   );
 }

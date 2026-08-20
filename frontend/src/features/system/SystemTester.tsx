@@ -12,8 +12,15 @@ export const SystemTester = () => {
       await SystemApi.testError(code(), toast());
       alert("La petición fue exitosa (No se generó error)");
     } catch (error: any) {
+
+      const status = error.response?.status || 'desconocido';
+      const errorType = error.response?.data?.error?.type || 'Tipo no especificado';
+      const errorMessage = error.response?.data?.error?.message || error.message;
+
       alert(
-        `Error capturado: ${error.response?.data?.error?.message || error.message}`,
+        `❌ Error ${status}\n` +
+        `Tipo: ${errorType}\n` +
+        `Mensaje: ${errorMessage}`
       );
     } finally {
       setLoading(false);
