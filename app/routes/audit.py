@@ -1,17 +1,20 @@
 from datetime import datetime
 from enum import Enum
 from typing import get_args
-from core.error_codes import ERROR_CODES, GENERIC_MESSAGES
-from core.logger import LOGS_OPTIONS
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page, add_pagination
 from fastapi_pagination.ext.tortoise import apaginate
+from pydantic import BaseModel, field_validator
+
+from core.error_codes import ERROR_CODES, GENERIC_MESSAGES
+from core.logger import LOGS_OPTIONS
 from models.audit_logs import AuditLog
 from models.users import Users
-from pydantic import BaseModel, field_validator
 from security.auth import get_current_admin_user
 
 auditRouter = APIRouter(tags=["Audit"], prefix="/audit")
+
 
 class LogResponse(BaseModel):
     id: int
@@ -25,6 +28,7 @@ class LogResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class LogFilter(BaseModel):
     user_id: int | None = None
@@ -40,6 +44,7 @@ class LogFilter(BaseModel):
             raise ValueError("Tipo de log inválido")
         return v.lower() if v else None
 
+
 class SortOrder(str, Enum):
     ASC = "asc"
     DESC = "desc"
@@ -47,6 +52,7 @@ class SortOrder(str, Enum):
     OLDEST = "oldest"
     A_Z = "a-z"
     Z_A = "z-a"
+
 
 @auditRouter.get("/logs", response_model=Page[LogResponse])
 async def get_logs(
@@ -80,6 +86,7 @@ async def get_logs(
 
     return await apaginate(query)
 
+
 @auditRouter.get("/errors")
 async def list_error_codes(current_user: Users = Depends(get_current_admin_user)):
     result = []
@@ -96,6 +103,7 @@ async def list_error_codes(current_user: Users = Depends(get_current_admin_user)
         )
     return result
 
+
 @auditRouter.get("/logs/{log_id}/verify")
 async def verify_log_integrity(
     log_id: int,
@@ -106,5 +114,6 @@ async def verify_log_integrity(
         raise HTTPException(status_code=404, detail={"code": "3x01a", "toast": True})
     is_valid = log.verify_integrity()
     return {"log_id": log_id, "is_integrity_valid": is_valid}
+
 
 add_pagination(auditRouter)

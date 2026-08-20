@@ -70,9 +70,9 @@ async def create_admin_user():
 
         print("\n" + "-" * 50)
         print("📋 Resumen:")
-        print(f"   Usuario: {username}")
-        print(f"   Rol: Administrador")
-        print(f"   Estado: Activo")
+        print(f"Usuario: {username}")
+        print("Rol: Administrador")
+        print("Estado: Activo")
         print("-" * 50)
         confirm = input("\n¿Crear este usuario? (s/N): ").strip().lower()
         if confirm != "s":
