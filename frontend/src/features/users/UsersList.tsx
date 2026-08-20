@@ -6,6 +6,7 @@ import {
   createEffect,
 } from "solid-js";
 import { createForm, setValues, reset } from "@modular-forms/solid";
+import toast, { Toaster } from "solid-toast";
 import { useAuth } from "@/context/auth";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Input } from "@/components/ui/Input";
@@ -88,9 +89,11 @@ export const UsersList = () => {
       });
       refetch();
       setShowAddModal(false);
-      alert("Usuario creado exitosamente");
+      toast.success("Usuario creado exitosamente");
     } catch (error: any) {
-      alert(error.response?.data?.detail?.message || "Error al crear usuario");
+      toast.error(
+        error.response?.data?.detail?.message || "Error al crear usuario",
+      );
     }
   };
 
@@ -103,9 +106,9 @@ export const UsersList = () => {
       });
       refetch();
       setShowEditModal(false);
-      alert("Usuario actualizado");
+      toast.success("Usuario actualizado correctamente");
     } catch (error: any) {
-      alert(
+      toast.error(
         error.response?.data?.detail?.message || "Error al actualizar usuario",
       );
     }
@@ -119,9 +122,9 @@ export const UsersList = () => {
         values.new_password,
       );
       setShowPasswordModal(false);
-      alert("Contraseña cambiada");
+      toast.success("Contraseña actualizada exitosamente");
     } catch (error: any) {
-      alert(
+      toast.error(
         error.response?.data?.detail?.message || "Error al cambiar contraseña",
       );
     }
@@ -131,14 +134,16 @@ export const UsersList = () => {
     try {
       if (targetUser.is_active) {
         await UsersApi.disableUser(targetUser.id);
-        alert("Usuario deshabilitado");
+        toast.error(`Usuario ${targetUser.username} deshabilitado`);
       } else {
         await UsersApi.updateUser(targetUser.id, { is_active: true });
-        alert("Usuario habilitado");
+        toast.success(`Usuario ${targetUser.username} habilitado`);
       }
       refetch();
     } catch (error: any) {
-      alert(error.response?.data?.detail?.message || "Error al cambiar estado");
+      toast.error(
+        error.response?.data?.detail?.message || "Error al cambiar estado",
+      );
     }
   };
 
@@ -147,9 +152,9 @@ export const UsersList = () => {
     try {
       await UsersApi.deleteUser(targetUser.id);
       refetch();
-      alert("Usuario eliminado");
+      toast.success("Usuario eliminado exitosamente");
     } catch (error: any) {
-      alert(
+      toast.error(
         error.response?.data?.detail?.message || "Error al eliminar usuario",
       );
     }
@@ -160,9 +165,9 @@ export const UsersList = () => {
       return;
     try {
       await UsersApi.closeAllSessionsOfUser(targetUser.id);
-      alert(`Sesiones cerradas para ${targetUser.username}`);
+      toast.success(`Sesiones cerradas para ${targetUser.username}`);
     } catch (error: any) {
-      alert(
+      toast.error(
         error.response?.data?.detail?.message ||
           "Error al desconectar sesiones",
       );
@@ -173,11 +178,14 @@ export const UsersList = () => {
     <Show
       when={user()?.is_admin}
       fallback={
-        <div class="alert alert-error shadow-sm">
+        <div class="alert alert-error shadow-sm text-white">
           Requiere permisos de administrador.
         </div>
       }
     >
+      {/* Contenedor de notificaciones flotantes en la esquina superior derecha */}
+      <Toaster position="top-right" gutter={8} />
+
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
           <input
