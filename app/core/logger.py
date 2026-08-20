@@ -2,6 +2,7 @@ import logging
 from typing import Literal, Optional
 
 from fastapi import Request
+
 from models.audit_logs import AuditLog
 
 LOGS_OPTIONS = Literal[

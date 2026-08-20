@@ -1,8 +1,9 @@
 from datetime import datetime
 from uuid import uuid4
 
-from core.settings import TIMEZONE
 from fastapi import Depends, HTTPException, Request, Response
+
+from core.settings import TIMEZONE
 from models.user_sessions import UserSession
 from models.users import Users
 from security.cookies import remove_token_cookies, set_token_cookies

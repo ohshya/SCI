@@ -1,11 +1,12 @@
 from pathlib import Path
 
+from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+
 from core.database import init_db
 from core.exceptions import exception_handler
 from core.settings import settings
-from fastapi import APIRouter, FastAPI
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from routes.audit import auditRouter
 from routes.auth import authRouter
 from routes.system import systemRouter
