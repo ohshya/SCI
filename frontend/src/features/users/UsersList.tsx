@@ -22,6 +22,7 @@ import {
   type UserCreate,
   type UserUpdate,
 } from "@/api/users.api";
+import toast from "solid-toast";
 
 export const UsersList = () => {
   const { user } = useAuth();
@@ -88,9 +89,9 @@ export const UsersList = () => {
       });
       refetch();
       setShowAddModal(false);
-      alert("Usuario creado exitosamente");
+      toast("Usuario creado exitosamente");
     } catch (error: any) {
-      alert(error.response?.data?.detail?.message || "Error al crear usuario");
+      toast(error.response?.data?.detail?.message || "Error al crear usuario");
     }
   };
 
@@ -103,9 +104,9 @@ export const UsersList = () => {
       });
       refetch();
       setShowEditModal(false);
-      alert("Usuario actualizado");
+      toast("Usuario actualizado");
     } catch (error: any) {
-      alert(
+      toast(
         error.response?.data?.detail?.message || "Error al actualizar usuario",
       );
     }
@@ -119,9 +120,9 @@ export const UsersList = () => {
         values.new_password,
       );
       setShowPasswordModal(false);
-      alert("Contraseña cambiada");
+      toast("Contraseña cambiada");
     } catch (error: any) {
-      alert(
+      toast(
         error.response?.data?.detail?.message || "Error al cambiar contraseña",
       );
     }
@@ -131,14 +132,14 @@ export const UsersList = () => {
     try {
       if (targetUser.is_active) {
         await UsersApi.disableUser(targetUser.id);
-        alert("Usuario deshabilitado");
+        toast("Usuario deshabilitado");
       } else {
         await UsersApi.updateUser(targetUser.id, { is_active: true });
-        alert("Usuario habilitado");
+        toast("Usuario habilitado");
       }
       refetch();
     } catch (error: any) {
-      alert(error.response?.data?.detail?.message || "Error al cambiar estado");
+      toast(error.response?.data?.detail?.message || "Error al cambiar estado");
     }
   };
 
@@ -147,9 +148,9 @@ export const UsersList = () => {
     try {
       await UsersApi.deleteUser(targetUser.id);
       refetch();
-      alert("Usuario eliminado");
+      toast("Usuario eliminado");
     } catch (error: any) {
-      alert(
+      toast(
         error.response?.data?.detail?.message || "Error al eliminar usuario",
       );
     }
@@ -160,9 +161,9 @@ export const UsersList = () => {
       return;
     try {
       await UsersApi.closeAllSessionsOfUser(targetUser.id);
-      alert(`Sesiones cerradas para ${targetUser.username}`);
+      toast(`Sesiones cerradas para ${targetUser.username}`);
     } catch (error: any) {
-      alert(
+      toast(
         error.response?.data?.detail?.message ||
           "Error al desconectar sesiones",
       );
