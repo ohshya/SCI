@@ -3,9 +3,9 @@ import {
   Show,
   createSignal,
   createResource,
+  createEffect,
 } from "solid-js";
 import { createForm, setValues, reset } from "@modular-forms/solid";
-import toast, { Toaster } from "solid-toast";
 import { useAuth } from "@/context/auth";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Input } from "@/components/ui/Input";
@@ -34,10 +34,16 @@ export const UsersList = () => {
   const [selectedUser, setSelectedUser] = createSignal<UserResponse | null>(
     null,
   );
+
   const [users, { refetch }] = createResource(
     () => ({ search: search(), is_active: isActive(), is_admin: isAdmin() }),
     UsersApi.getUsers,
   );
+
+  createEffect(() => {
+    refetch();
+  });
+
   const [addFormStore, { Form: AddForm, Field: AddField }] =
     createForm<UserCreate>({
       validateOn: "blur",
@@ -50,6 +56,7 @@ export const UsersList = () => {
         return errors;
       },
     });
+
   const [editFormStore, { Form: EditForm, Field: EditField }] =
     createForm<UserUpdate>({
       validateOn: "blur",
@@ -60,6 +67,7 @@ export const UsersList = () => {
         return errors;
       },
     });
+
   const [passwordFormStore, { Form: PasswordForm, Field: PasswordField }] =
     createForm<{ new_password: string }>({
       validateOn: "blur",
@@ -71,6 +79,7 @@ export const UsersList = () => {
         return errors;
       },
     });
+
   const handleAddUser = async (values: UserCreate) => {
     try {
       await UsersApi.createUser({
@@ -79,13 +88,12 @@ export const UsersList = () => {
       });
       refetch();
       setShowAddModal(false);
-      toast.success("Usuario creado exitosamente");
+      alert("Usuario creado exitosamente");
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.detail?.message || "Error al crear usuario",
-      );
+      alert(error.response?.data?.detail?.message || "Error al crear usuario");
     }
   };
+
   const handleUpdateUser = async (values: UserUpdate) => {
     if (!selectedUser()) return;
     try {
@@ -95,13 +103,14 @@ export const UsersList = () => {
       });
       refetch();
       setShowEditModal(false);
-      toast.success("Usuario actualizado correctamente");
+      alert("Usuario actualizado");
     } catch (error: any) {
-      toast.error(
+      alert(
         error.response?.data?.detail?.message || "Error al actualizar usuario",
       );
     }
   };
+
   const handleChangePassword = async (values: { new_password: string }) => {
     if (!selectedUser()) return;
     try {
@@ -110,64 +119,65 @@ export const UsersList = () => {
         values.new_password,
       );
       setShowPasswordModal(false);
-      toast.success("Contraseña actualizada exitosamente");
+      alert("Contraseña cambiada");
     } catch (error: any) {
-      toast.error(
+      alert(
         error.response?.data?.detail?.message || "Error al cambiar contraseña",
       );
     }
   };
+
   const handleToggleActive = async (targetUser: UserResponse) => {
     try {
       if (targetUser.is_active) {
         await UsersApi.disableUser(targetUser.id);
-        toast.error(`Usuario ${targetUser.username} deshabilitado`);
+        alert("Usuario deshabilitado");
       } else {
         await UsersApi.updateUser(targetUser.id, { is_active: true });
-        toast.success(`Usuario ${targetUser.username} habilitado`);
+        alert("Usuario habilitado");
       }
       refetch();
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.detail?.message || "Error al cambiar estado",
-      );
+      alert(error.response?.data?.detail?.message || "Error al cambiar estado");
     }
   };
+
   const handleDeleteUser = async (targetUser: UserResponse) => {
     if (!confirm(`¿Eliminar a ${targetUser.username}?`)) return;
     try {
       await UsersApi.deleteUser(targetUser.id);
       refetch();
-      toast.success("Usuario eliminado exitosamente");
+      alert("Usuario eliminado");
     } catch (error: any) {
-      toast.error(
+      alert(
         error.response?.data?.detail?.message || "Error al eliminar usuario",
       );
     }
   };
+
   const handleForceDisconnect = async (targetUser: UserResponse) => {
     if (!confirm(`¿Cerrar todas las sesiones de ${targetUser.username}?`))
       return;
     try {
       await UsersApi.closeAllSessionsOfUser(targetUser.id);
-      toast.success(`Sesiones cerradas para ${targetUser.username}`);
+      alert(`Sesiones cerradas para ${targetUser.username}`);
     } catch (error: any) {
-      toast.error(
+      alert(
         error.response?.data?.detail?.message ||
           "Error al desconectar sesiones",
       );
     }
   };
+
   return (
     <Show
       when={user()?.is_admin}
       fallback={
-        <div class="alert alert-error shadow-sm text-white">
+        <div class="alert alert-error shadow-sm">
           Requiere permisos de administrador.
         </div>
       }
     >
-      <Toaster position="top-right" gutter={8} />
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
           <input
@@ -280,12 +290,11 @@ export const UsersList = () => {
             </tbody>
           </table>
         </div>
+
         <dialog
           class={`modal ${showAddModal() ? "modal-open" : ""}`}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowAddModal(false);
-            }
+            if (e.target === e.currentTarget) setShowAddModal(false);
           }}
         >
           <div class="modal-box max-w-sm">
@@ -295,7 +304,7 @@ export const UsersList = () => {
                 {(field, props) => (
                   <Input
                     label="Nombre de usuario"
-                    value={field.value}
+                    value={field.value ?? ''}
                     error={field.error}
                     {...props}
                   />
@@ -305,7 +314,7 @@ export const UsersList = () => {
                 {(field, props) => (
                   <PasswordInput
                     label="Contraseña"
-                    value={field.value}
+                    value={field.value ?? ''}
                     error={field.error}
                     {...props}
                   />
@@ -317,7 +326,7 @@ export const UsersList = () => {
                     <input
                       type="checkbox"
                       class="checkbox checkbox-primary checkbox-sm"
-                      checked={field.value || false}
+                      checked={field.value ?? false}
                       onChange={(e) => props.onChange(e)}
                     />
                     <span class="label-text">Administrador</span>
@@ -339,12 +348,11 @@ export const UsersList = () => {
             </AddForm>
           </div>
         </dialog>
+
         <dialog
           class={`modal ${showEditModal() ? "modal-open" : ""}`}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowEditModal(false);
-            }
+            if (e.target === e.currentTarget) setShowEditModal(false);
           }}
         >
           <div class="modal-box max-w-sm">
@@ -355,7 +363,7 @@ export const UsersList = () => {
                   {(field, props) => (
                     <Input
                       label="Nombre de usuario"
-                      value={field.value}
+                      value={field.value ?? ''}
                       error={field.error}
                       {...props}
                     />
@@ -406,12 +414,11 @@ export const UsersList = () => {
             </Show>
           </div>
         </dialog>
+
         <dialog
           class={`modal ${showPasswordModal() ? "modal-open" : ""}`}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowPasswordModal(false);
-            }
+            if (e.target === e.currentTarget) setShowPasswordModal(false);
           }}
         >
           <div class="modal-box max-w-sm">
@@ -426,7 +433,7 @@ export const UsersList = () => {
                   {(field, props) => (
                     <PasswordInput
                       label="Nueva contraseña"
-                      value={field.value}
+                      value={field.value ?? ''}
                       error={field.error}
                       {...props}
                     />
