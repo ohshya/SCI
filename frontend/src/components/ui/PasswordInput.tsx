@@ -9,9 +9,7 @@ interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const PasswordInput = (allProps: Props) => {
-  // 1. Usar mergeProps para definir un valor por defecto seguro para "value"
   const merged = mergeProps({ value: "" }, allProps);
-
   const [visible, setVisible] = createSignal(false);
   const [props, inputProps] = splitProps(merged, [
     "label",
@@ -31,7 +29,6 @@ export const PasswordInput = (allProps: Props) => {
             type={visible() ? "text" : "password"}
             class="grow"
             {...inputProps}
-            // 2. Garantizar un string vacío si la prop llega como null o undefined
             value={inputProps.value ?? ""} 
             disabled={props.loading}
           />
