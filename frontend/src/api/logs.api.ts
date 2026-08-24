@@ -2,11 +2,13 @@ import { api } from "./axios";
 
 export type LogResponse = {
 	id: number;
-	userId: number | null;
-	logType: string;
+	user_id: number | null;
+	type: string;
 	message: string;
-	ipAddress: string;
-	date: string;
+	ip: string;
+	created_at: string;
+	error_code: number | null;
+	hash: string;
 };
 
 export type PaginatedLogs = {
