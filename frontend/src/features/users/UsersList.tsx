@@ -291,8 +291,6 @@ export const UsersList = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Modal Agregar Usuario */}
         <dialog
           class={`modal ${showAddModal() ? "modal-open" : ""}`}
           onClick={(e) => {
