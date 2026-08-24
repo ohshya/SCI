@@ -34,12 +34,10 @@ export const UsersList = () => {
   const [selectedUser, setSelectedUser] = createSignal<UserResponse | null>(
     null,
   );
-
   const [users, { refetch }] = createResource(
     () => ({ search: search(), is_active: isActive(), is_admin: isAdmin() }),
     UsersApi.getUsers,
   );
-
   const [addFormStore, { Form: AddForm, Field: AddField }] =
     createForm<UserCreate>({
       validateOn: "blur",
@@ -52,7 +50,6 @@ export const UsersList = () => {
         return errors;
       },
     });
-
   const [editFormStore, { Form: EditForm, Field: EditField }] =
     createForm<UserUpdate>({
       validateOn: "blur",
@@ -63,7 +60,6 @@ export const UsersList = () => {
         return errors;
       },
     });
-
   const [passwordFormStore, { Form: PasswordForm, Field: PasswordField }] =
     createForm<{ new_password: string }>({
       validateOn: "blur",
@@ -75,7 +71,6 @@ export const UsersList = () => {
         return errors;
       },
     });
-
   const handleAddUser = async (values: UserCreate) => {
     try {
       await UsersApi.createUser({
@@ -91,7 +86,6 @@ export const UsersList = () => {
       );
     }
   };
-
   const handleUpdateUser = async (values: UserUpdate) => {
     if (!selectedUser()) return;
     try {
@@ -108,7 +102,6 @@ export const UsersList = () => {
       );
     }
   };
-
   const handleChangePassword = async (values: { new_password: string }) => {
     if (!selectedUser()) return;
     try {
@@ -124,7 +117,6 @@ export const UsersList = () => {
       );
     }
   };
-
   const handleToggleActive = async (targetUser: UserResponse) => {
     try {
       if (targetUser.is_active) {
@@ -141,7 +133,6 @@ export const UsersList = () => {
       );
     }
   };
-
   const handleDeleteUser = async (targetUser: UserResponse) => {
     if (!confirm(`¿Eliminar a ${targetUser.username}?`)) return;
     try {
@@ -154,7 +145,6 @@ export const UsersList = () => {
       );
     }
   };
-
   const handleForceDisconnect = async (targetUser: UserResponse) => {
     if (!confirm(`¿Cerrar todas las sesiones de ${targetUser.username}?`))
       return;
@@ -168,7 +158,6 @@ export const UsersList = () => {
       );
     }
   };
-
   return (
     <Show
       when={user()?.is_admin}
