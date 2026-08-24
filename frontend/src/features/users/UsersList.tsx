@@ -3,7 +3,6 @@ import {
   Show,
   createSignal,
   createResource,
-  createEffect,
 } from "solid-js";
 import { createForm, setValues, reset } from "@modular-forms/solid";
 import toast, { Toaster } from "solid-toast";
@@ -40,10 +39,6 @@ export const UsersList = () => {
     () => ({ search: search(), is_active: isActive(), is_admin: isAdmin() }),
     UsersApi.getUsers,
   );
-
-  createEffect(() => {
-    refetch();
-  });
 
   const [addFormStore, { Form: AddForm, Field: AddField }] =
     createForm<UserCreate>({
@@ -297,7 +292,15 @@ export const UsersList = () => {
           </table>
         </div>
 
-        <dialog class={`modal ${showAddModal() ? "modal-open" : ""}`}>
+        {/* Modal Agregar Usuario */}
+        <dialog
+          class={`modal ${showAddModal() ? "modal-open" : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+            }
+          }}
+        >
           <div class="modal-box max-w-sm">
             <h3 class="font-bold text-lg mb-2">Agregar Usuario</h3>
             <AddForm onSubmit={handleAddUser}>
@@ -349,8 +352,14 @@ export const UsersList = () => {
             </AddForm>
           </div>
         </dialog>
-
-        <dialog class={`modal ${showEditModal() ? "modal-open" : ""}`}>
+        <dialog
+          class={`modal ${showEditModal() ? "modal-open" : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEditModal(false);
+            }
+          }}
+        >
           <div class="modal-box max-w-sm">
             <h3 class="font-bold text-lg mb-2">Editar Usuario</h3>
             <Show when={selectedUser()}>
@@ -410,8 +419,14 @@ export const UsersList = () => {
             </Show>
           </div>
         </dialog>
-
-        <dialog class={`modal ${showPasswordModal() ? "modal-open" : ""}`}>
+        <dialog
+          class={`modal ${showPasswordModal() ? "modal-open" : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowPasswordModal(false);
+            }
+          }}
+        >
           <div class="modal-box max-w-sm">
             <h3 class="font-bold text-lg mb-2">Cambiar Contraseña</h3>
             <Show when={selectedUser()}>
