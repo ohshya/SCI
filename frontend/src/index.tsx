@@ -1,8 +1,9 @@
-import { Router, type RouteDefinition } from '@solidjs/router'
-import { render } from 'solid-js/web'
-import { lazy } from 'solid-js'
-import { ProtectedRoute } from './components/layout/ProtectedRoute'
-import './index.css'
+import { Router, type RouteDefinition } from "@solidjs/router";
+import { render } from "solid-js/web";
+import { lazy } from "solid-js";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { ServerStatusGate } from "./components/layout/ServerStatusGate";
+import "./index.css";
 
 const routes: RouteDefinition[] = [
   {
@@ -24,4 +25,11 @@ const routes: RouteDefinition[] = [
   }
 ]
 
-render(() => <Router>{routes}</Router>, document.getElementById('root')!)
+render(
+  () => (
+    <ServerStatusGate>
+      <Router>{routes}</Router>
+    </ServerStatusGate>
+  ),
+  document.getElementById("root")!
+);
