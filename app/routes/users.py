@@ -175,7 +175,6 @@ async def disable_user(
         )
         raise HTTPException(status_code=500, detail={"code": "5x03a", "toast": True})
 
-
 @usersRouter.delete("/{user_id}", status_code=200)
 async def delete_user(
     user_id: int,
@@ -188,20 +187,19 @@ async def delete_user(
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail={"code": "4x01a", "toast": True})
     try:
-        await user.delete()
         await log_event(
             request,
             "delete",
             f"Usuario eliminado: {user.username} : {user.id}",
             user_id=user.id,
         )
+        await user.delete()
         return {"message": "Usuario eliminado correctamente"}
     except Exception as e:
         await log_event(
             request, "error", f"Error al eliminar usuario: {str(e)}", error_code="5x04a"
         )
         raise HTTPException(status_code=500, detail={"code": "5x04a", "toast": True})
-
 
 @usersRouter.post("/{user_id}/password", status_code=200)
 async def change_password(
