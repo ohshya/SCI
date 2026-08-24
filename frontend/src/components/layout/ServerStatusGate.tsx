@@ -6,8 +6,9 @@ import {
 } from "@/context/serverStatus";
 import { useAuth, retryPendingLogout } from "@/context/auth";
 import Offline from "@/pages/Offline";
+import {type RouteSectionProps } from "@solidjs/router";
 
-export function ServerStatusGate(props: { children: JSX.Element }) {
+export function ServerStatusGate(props: RouteSectionProps) {
 	const { online } = useServerStatus();
 	const { user } = useAuth();
 
@@ -31,5 +32,3 @@ export function ServerStatusGate(props: { children: JSX.Element }) {
 		</Show>
 	);
 }
-
-// Hola

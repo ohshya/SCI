@@ -7,29 +7,27 @@ import "./index.css";
 
 const routes: RouteDefinition[] = [
   {
-    path: '/login',
-    component: lazy(() => import('./pages/Login'))
-  },
-  {
-    path: '/*',
-    component: lazy(() => import('./pages/NotFound'))
-  },
-  {
-    component: ProtectedRoute,
+    component: ServerStatusGate,
     children: [
       {
-        path: '/',
-        component: lazy(() => import('./pages/Dashboard'))
+        path: '/login',
+        component: lazy(() => import('./pages/Login'))
+      },
+      {
+        path: '/*',
+        component: lazy(() => import('./pages/NotFound'))
+      },
+      {
+        component: ProtectedRoute,
+        children: [
+          {
+            path: '/',
+            component: lazy(() => import('./pages/Dashboard'))
+          }
+        ]
       }
     ]
-  }
+  },
 ]
 
-render(
-  () => (
-    <ServerStatusGate>
-      <Router>{routes}</Router>
-    </ServerStatusGate>
-  ),
-  document.getElementById("root")!
-);
+render(() => (<Router>{routes}</Router>), document.getElementById("root")!);
