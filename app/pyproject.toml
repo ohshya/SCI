@@ -7,3 +7,6 @@ reportMissingImports = "warning"
 reportMissingTypeStubs = "none"
 reportImportCycles = "none"
 reportAttributeAccessIssue = "none"
+
+[tool.ruff.lint]
+ignore = ["B008"]
