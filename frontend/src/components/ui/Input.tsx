@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js/jsx-runtime";
-import { splitProps } from "solid-js";
+import { splitProps, mergeProps } from "solid-js";
 
 interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
   loading?: boolean;
@@ -10,7 +10,8 @@ interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = (allProps: Props) => {
-  const [props, inputProps] = splitProps(allProps, [
+  const merged = mergeProps({ value: "" }, allProps);
+  const [props, inputProps] = splitProps(merged, [
     "label",
     "error",
     "icon",
@@ -32,6 +33,7 @@ export const Input = (allProps: Props) => {
           type="text"
           class="grow"
           {...inputProps}
+          value={inputProps.value ?? ""}
           disabled={props.loading}
         />
       </label>

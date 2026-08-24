@@ -1,5 +1,5 @@
 import { IoEye, IoEyeOff } from "solid-icons/io";
-import { createSignal, splitProps } from "solid-js";
+import { createSignal, splitProps, mergeProps } from "solid-js";
 import type { JSX } from "solid-js/jsx-runtime";
 
 interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
@@ -9,12 +9,16 @@ interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const PasswordInput = (allProps: Props) => {
+  // 1. Usar mergeProps para definir un valor por defecto seguro para "value"
+  const merged = mergeProps({ value: "" }, allProps);
+
   const [visible, setVisible] = createSignal(false);
-  const [props, inputProps] = splitProps(allProps, [
+  const [props, inputProps] = splitProps(merged, [
     "label",
     "error",
     "loading",
   ]);
+
   return (
     <fieldset class="fieldset w-full">
       <legend class="fieldset-legend">{props?.label}</legend>
@@ -27,12 +31,14 @@ export const PasswordInput = (allProps: Props) => {
             type={visible() ? "text" : "password"}
             class="grow"
             {...inputProps}
+            // 2. Garantizar un string vacío si la prop llega como null o undefined
+            value={inputProps.value ?? ""} 
             disabled={props.loading}
           />
         </label>
         <button
           type="button"
-          onclick={() => setVisible((e) => !e)}
+          onClick={() => setVisible((e) => !e)}
           class="btn join-item text-base-content"
           disabled={props.loading}
         >
