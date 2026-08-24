@@ -23,11 +23,26 @@ export async function refreshUser() {
 	}
 }
 
+let pendingLogout = false;
+
 export async function logoutUser() {
 	try {
 		await logoutRequest();
+		pendingLogout = false;
+	} catch {
+		pendingLogout = true;
 	} finally {
 		setUser(null);
+	}
+}
+
+export async function retryPendingLogout() {
+	if (!pendingLogout) return;
+	try {
+		await logoutRequest();
+		pendingLogout = false;
+  } catch {
+
 	}
 }
 

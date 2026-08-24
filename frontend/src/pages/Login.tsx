@@ -36,6 +36,8 @@ export default function Login() {
       await refreshUser()
       navigate('/')
     } catch (error) {
+      console.log(error)
+    } finally {
       setLoading(false)
     }
   }

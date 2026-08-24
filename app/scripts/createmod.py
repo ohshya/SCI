@@ -9,6 +9,7 @@ from getpass import getpass
 from tortoise import Tortoise
 
 from core.database import TORTOISE_ORM
+from core.logger import log_event
 from models.users import Users
 from security.helpers import hash_password
 
@@ -86,11 +87,32 @@ async def create_admin_user():
             is_admin=True,
         )
         await new_admin.save()
-        print("\n✅ Usuario administrador creado exitosamente!")
+
+        print(
+            f"\n[LOG] CREATE | Usuario: {new_admin.id} | Usuario administrador creado: {username}"
+        )
+
+        await log_event(
+            request=None,
+            log_type="create",
+            message=f"Usuario administrador creado: {username}",
+            user_id=new_admin.id,
+            error_code=None,
+        )
+
+        print(f"\n✅ Usuario administrador creado exitosamente!")
         print(f"   ID: {new_admin.id}")
         print(f"   Usuario: {new_admin.username}")
         print(f"   Rol: {'Administrador' if new_admin.is_admin else 'Usuario'}")
+
     except Exception as e:
+        await log_event(
+            request=None,
+            log_type="error",
+            message=f"Error al crear usuario administrador: {str(e)}",
+            user_id=None,
+            error_code="ADMIN_ERR",
+        )
         print(f"\n❌ Error al crear el usuario: {str(e)}")
         sys.exit(1)
     finally:
