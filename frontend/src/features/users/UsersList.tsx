@@ -89,9 +89,9 @@ export const UsersList = () => {
       });
       refetch();
       setShowAddModal(false);
-      toast("Usuario creado exitosamente");
+      toast.success("Usuario creado exitosamente");
     } catch (error: any) {
-      toast(error.response?.data?.detail?.message || "Error al crear usuario");
+      toast.success(error.response?.data?.detail?.message || "Error al crear usuario");
     }
   };
 
@@ -104,9 +104,9 @@ export const UsersList = () => {
       });
       refetch();
       setShowEditModal(false);
-      toast("Usuario actualizado");
+      toast.success("Usuario actualizado");
     } catch (error: any) {
-      toast(
+      toast.success(
         error.response?.data?.detail?.message || "Error al actualizar usuario",
       );
     }
@@ -120,9 +120,9 @@ export const UsersList = () => {
         values.new_password,
       );
       setShowPasswordModal(false);
-      toast("Contraseña cambiada");
+      toast.success("Contraseña cambiada");
     } catch (error: any) {
-      toast(
+      toast.success(
         error.response?.data?.detail?.message || "Error al cambiar contraseña",
       );
     }
@@ -132,14 +132,14 @@ export const UsersList = () => {
     try {
       if (targetUser.is_active) {
         await UsersApi.disableUser(targetUser.id);
-        toast("Usuario deshabilitado");
+        toast.success("Usuario deshabilitado");
       } else {
         await UsersApi.updateUser(targetUser.id, { is_active: true });
-        toast("Usuario habilitado");
+        toast.success("Usuario habilitado");
       }
       refetch();
     } catch (error: any) {
-      toast(error.response?.data?.detail?.message || "Error al cambiar estado");
+      toast.success(error.response?.data?.detail?.message || "Error al cambiar estado");
     }
   };
 
@@ -148,9 +148,9 @@ export const UsersList = () => {
     try {
       await UsersApi.deleteUser(targetUser.id);
       refetch();
-      toast("Usuario eliminado");
+      toast.success("Usuario eliminado");
     } catch (error: any) {
-      toast(
+      toast.success(
         error.response?.data?.detail?.message || "Error al eliminar usuario",
       );
     }
@@ -161,9 +161,9 @@ export const UsersList = () => {
       return;
     try {
       await UsersApi.closeAllSessionsOfUser(targetUser.id);
-      toast(`Sesiones cerradas para ${targetUser.username}`);
+      toast.success(`Sesiones cerradas para ${targetUser.username}`);
     } catch (error: any) {
-      toast(
+      toast.success(
         error.response?.data?.detail?.message ||
           "Error al desconectar sesiones",
       );
