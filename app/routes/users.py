@@ -91,7 +91,7 @@ async def create_user(
         await new_user.save()
         await log_event(
             request,
-            "",
+            "create",
             f"Usuario creado: {new_user.username} (ID: {new_user.id})",
             user_id=new_user.id,
         )
