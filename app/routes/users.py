@@ -188,13 +188,12 @@ async def delete_user(
         raise HTTPException(status_code=400, detail={"code": "4x01a", "toast": True})
     saved_user_id = user.id
     saved_username = user.username
-    created_at_evidence = str(getattr(user, "created_at", "N/A"))
     try:
         await user.delete()
         await log_event(
             request,
             "delete",
-            f"Usuario eliminado: {saved_username} (ID: {saved_user_id}) | Creado: {created_at_evidence}",
+            f"Usuario eliminado: {saved_username} (ID: {saved_user_id})",
             user_id=current_user.id,
         )
         return {"message": "Usuario eliminado correctamente"}
