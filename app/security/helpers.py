@@ -1,5 +1,6 @@
-from core.settings import settings
 import bcrypt
+
+from core.settings import settings
 
 
 def hash_password(password: str) -> str:

@@ -7,13 +7,27 @@ from core.settings import TIMEZONE
 from models.user_sessions import UserSession
 from models.users import Users
 from security.cookies import remove_token_cookies, set_token_cookies
+from security.master import MasterUser
 from security.tokens import (
     create_access_token,
     create_refresh_token,
+    decode_token,
     validate_access_token_format,
     validate_refresh_token_format,
 )
 from security.user_agent import get_location_from_ip, parse_user_agent
+
+
+async def get_current_user_or_master(request: Request, response: Response) -> Users:
+    access_token = request.cookies.get("access_token")
+    if access_token:
+        try:
+            payload = decode_token(access_token)
+            if payload.get("type") == "access" and payload.get("is_master"):
+                return MasterUser()
+        except HTTPException:
+            pass
+    return await get_current_user(request, response)
 
 
 async def get_current_user(request: Request, response: Response) -> Users:

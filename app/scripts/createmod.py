@@ -36,6 +36,9 @@ def validate_password(password: str) -> bool:
     if len(password) < 6:
         print("❌ La contraseña debe tener al menos 6 caracteres")
         return False
+    if len(password) > 32:
+        print("❌ La contraseña no puede tener más de 32 caracteres")
+        return False
     return True
 
 

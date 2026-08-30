@@ -47,4 +47,10 @@ ERROR_CODES = {
     "AUTH010": {"generic": 2, "description": "Token inválido"},
     "AUTH011": {"generic": 2, "description": "Token expirado"},
     "AUTH012": {"generic": 2, "description": "Token inválido"},
+    "PERM001": {
+        "generic": 2,
+        "description": "Usuario sin el permiso requerido para esta acción",
+    },
+    "PERM002": {"generic": 7, "description": "ID de permiso inválido"},
+    "PERM003": {"generic": 4, "description": "Ya existe un rol con ese nombre"},
 }

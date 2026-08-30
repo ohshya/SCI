@@ -37,7 +37,7 @@ class AuditLog(Model):
     async def save(self, *args, **kwargs):
         if self.created_at is None:
             self.created_at = datetime.now(TIMEZONE)
-        user_id_val = self.user_id if self.user else ""  # pyright: ignore[reportAttributeAccessIssue]
+        user_id_val = self.user_id
         data = f"{user_id_val}|{self.type}|{self.message}|{self.ip}|{self.error_code or ''}|{self.created_at.isoformat()}"
         self.hash = hmac.new(
             settings.key.encode(), data.encode(), hashlib.sha256
@@ -45,7 +45,7 @@ class AuditLog(Model):
         await super().save(*args, **kwargs)
 
     def verify_integrity(self) -> bool:
-        user_id_val = self.user_id if self.user else ""
+        user_id_val = self.user_id
         data = f"{user_id_val}|{self.type}|{self.message}|{self.ip}|{self.error_code or ''}|{self.created_at.isoformat()}"
         expected_hash = hmac.new(
             settings.key.encode(), data.encode(), hashlib.sha256

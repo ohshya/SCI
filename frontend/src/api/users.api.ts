@@ -5,19 +5,20 @@ export type UserResponse = {
 	username: string;
 	is_active: boolean;
 	is_admin: boolean;
+	role_id: number | null;
 	created_at: string;
 };
 
 export type UserCreate = {
 	username: string;
 	password: string;
-	is_admin?: boolean;
+	role_id?: number | null;
 };
 
 export type UserUpdate = {
 	username?: string;
 	is_active?: boolean;
-	is_admin?: boolean;
+	role_id?: number | null;
 };
 
 export const UsersApi = {

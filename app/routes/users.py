@@ -5,15 +5,16 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, field_validator
 
 from core.logger import log_event
+from core.permissions import require_permission
+from models.roles import Role
 from models.users import Users
-from security.auth import get_current_admin_user
 from security.helpers import hash_password
 
 
 class UserCreate(BaseModel):
     username: str
     password: str
-    is_admin: bool | None = False
+    role_id: int | None = None
 
     @field_validator("password")
     def validate_password(cls, v):
@@ -21,13 +22,17 @@ class UserCreate(BaseModel):
             raise HTTPException(
                 status_code=400, detail={"code": "6x01a", "toast": True}
             )
+        if len(v) > 32:
+            raise HTTPException(
+                status_code=400, detail={"code": "6x02a", "toast": True}
+            )
         return v
 
 
 class UserUpdate(BaseModel):
     username: str | None = None
     is_active: bool | None = None
-    is_admin: bool | None = None
+    role_id: int | None = None
 
 
 class UserResponse(BaseModel):
@@ -35,6 +40,7 @@ class UserResponse(BaseModel):
     username: str
     is_active: bool
     is_admin: bool
+    role_id: int | None
     created_at: datetime
 
     class Config:
@@ -50,10 +56,22 @@ class PasswordChange(BaseModel):
             raise HTTPException(
                 status_code=400, detail={"code": "6x01a", "toast": True}
             )
+        if len(v) > 32:
+            raise HTTPException(
+                status_code=400, detail={"code": "6x02a", "toast": True}
+            )
         return v
 
 
 usersRouter = APIRouter(tags=["Users"], prefix="/users")
+
+
+async def _validate_role_id(role_id: int | None):
+    if role_id is None:
+        return
+    role = await Role.filter(id=role_id).first()
+    if not role:
+        raise HTTPException(status_code=400, detail={"code": "3x01a", "toast": True})
 
 
 @usersRouter.get("/", response_model=List[UserResponse])
@@ -61,7 +79,7 @@ async def list_users(
     is_active: Optional[bool] = None,
     is_admin: Optional[bool] = None,
     search: Optional[str] = None,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(1)),
 ):
     query = Users.all()
     if is_active is not None:
@@ -77,16 +95,18 @@ async def list_users(
 async def create_user(
     user_data: UserCreate,
     request: Request,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(2)),
 ):
     existing = await Users.filter(username=user_data.username).first()
     if existing:
         raise HTTPException(status_code=400, detail={"code": "2x01a", "toast": True})
+    await _validate_role_id(user_data.role_id)
     try:
         new_user = Users(
             username=user_data.username,
             password=hash_password(user_data.password),
-            is_admin=user_data.is_admin or False,
+            is_admin=False,
+            role_id=user_data.role_id,
         )
         await new_user.save()
         await log_event(
@@ -108,7 +128,7 @@ async def update_user(
     user_id: int,
     user_data: UserUpdate,
     request: Request,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(3)),
 ):
     user = await Users.filter(id=user_id).first()
     if not user:
@@ -120,12 +140,8 @@ async def update_user(
             raise HTTPException(
                 status_code=400, detail={"code": "2x02a", "toast": True}
             )
-    if (
-        "is_admin" in update_data
-        and update_data["is_admin"] is False
-        and user.id == current_user.id
-    ):
-        raise HTTPException(status_code=403, detail={"code": "1x01a", "toast": True})
+    if "role_id" in update_data:
+        await _validate_role_id(update_data["role_id"])
     try:
         for field, value in update_data.items():
             setattr(user, field, value)
@@ -151,7 +167,7 @@ async def update_user(
 async def disable_user(
     user_id: int,
     request: Request,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(4)),
 ):
     user = await Users.filter(id=user_id).first()
     if not user:
@@ -180,7 +196,7 @@ async def disable_user(
 async def delete_user(
     user_id: int,
     request: Request,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(5)),
 ):
     user = await Users.filter(id=user_id).first()
     if not user:
@@ -208,7 +224,7 @@ async def change_password(
     user_id: int,
     password_data: PasswordChange,
     request: Request,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(6)),
 ):
     user = await Users.filter(id=user_id).first()
     if not user:
