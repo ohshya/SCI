@@ -111,7 +111,7 @@ async def create_user(
         await new_user.save()
         await log_event(
             request,
-            "",
+            "create",
             f"Usuario creado: {new_user.username} (ID: {new_user.id})",
             user_id=new_user.id,
         )
@@ -191,7 +191,6 @@ async def disable_user(
         )
         raise HTTPException(status_code=500, detail={"code": "5x03a", "toast": True})
 
-
 @usersRouter.delete("/{user_id}", status_code=200)
 async def delete_user(
     user_id: int,
@@ -203,13 +202,15 @@ async def delete_user(
         raise HTTPException(status_code=404, detail={"code": "3x01a", "toast": True})
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail={"code": "4x01a", "toast": True})
+    saved_user_id = user.id
+    saved_username = user.username
     try:
         await user.delete()
         await log_event(
             request,
             "delete",
-            f"Usuario eliminado: {user.username} : {user.id}",
-            user_id=user.id,
+            f"Usuario eliminado: {saved_username} (ID: {saved_user_id})",
+            user_id=current_user.id,
         )
         return {"message": "Usuario eliminado correctamente"}
     except Exception as e:
@@ -217,7 +218,6 @@ async def delete_user(
             request, "error", f"Error al eliminar usuario: {str(e)}", error_code="5x04a"
         )
         raise HTTPException(status_code=500, detail={"code": "5x04a", "toast": True})
-
 
 @usersRouter.post("/{user_id}/password", status_code=200)
 async def change_password(
