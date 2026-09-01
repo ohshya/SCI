@@ -1,17 +1,24 @@
 import logging
 from datetime import datetime
+from uuid import uuid4
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
 from core.logger import log_event
+from core.permissions import get_effective_permissions, require_permission
 from core.settings import TIMEZONE
 from models.user_sessions import UserSession
 from models.users import Users
-from security.auth import create_user_session, get_current_admin_user, get_current_user
+from security.auth import (
+    create_user_session,
+    get_current_user,
+    get_current_user_or_master,
+)
 from security.cookies import remove_token_cookies, set_token_cookies
 from security.helpers import verify_password
+from security.master import MASTER_USER_ID, verify_master_credentials
 from security.tokens import (
     create_access_token,
     create_refresh_token,
@@ -51,12 +58,21 @@ authRouter = APIRouter(tags=["Authentication"], prefix="/auth")
 
 @authRouter.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, request: Request, response: Response):
+    if verify_master_credentials(user_data.username, user_data.password):
+        master_session_id = str(uuid4())
+        access_token, _ = create_access_token(
+            MASTER_USER_ID, master_session_id, is_master=True
+        )
+        refresh_token, _, _ = create_refresh_token(
+            MASTER_USER_ID, master_session_id, is_master=True
+        )
+        set_token_cookies(response, access_token, refresh_token)
+        await log_event(request, "login", "Acceso master utilizado", user_id=None)
+        return {"details": "Login exitoso"}
+
     user = await Users.filter(username=user_data.username).first()
     if not user:
-        raise HTTPException(
-            status_code=401,
-            detail={"code": "AUTH001", "toast": True},
-        )
+        raise HTTPException(status_code=401, detail={"code": "AUTH001", "toast": True})
     if not verify_password(user_data.password, user.password):
         await log_event(
             request,
@@ -64,15 +80,9 @@ async def login(user_data: UserLogin, request: Request, response: Response):
             f"Intento de login fallido para {user_data.username}",
             user_id=None,
         )
-        raise HTTPException(
-            status_code=401,
-            detail={"code": "AUTH001", "toast": True},
-        )
+        raise HTTPException(status_code=401, detail={"code": "AUTH001", "toast": True})
     if not user.is_active:
-        raise HTTPException(
-            status_code=403,
-            detail={"code": "AUTH002", "toast": True},
-        )
+        raise HTTPException(status_code=403, detail={"code": "AUTH002", "toast": True})
     _, access_token, refresh_token = await create_user_session(
         user_id=user.id,
         user_agent_raw=request.headers.get("user-agent"),
@@ -109,7 +119,7 @@ async def logout(
 
 
 @authRouter.get("/me", response_model=UserMeResponse)
-async def get_me(user: Users = Depends(get_current_user)):
+async def get_me(user: Users = Depends(get_current_user_or_master)):
     return {
         "id": user.id,
         "username": user.username,
@@ -133,10 +143,7 @@ async def close_session(
 ):
     session = await UserSession.filter(id=session_id, user_id=user.id).first()
     if not session:
-        raise HTTPException(
-            status_code=404,
-            detail={"code": "AUTH003", "toast": True},
-        )
+        raise HTTPException(status_code=404, detail={"code": "AUTH003", "toast": True})
     current_access_token = request.cookies.get("access_token")
     if current_access_token:
         try:
@@ -176,10 +183,7 @@ async def close_all_other_sessions(
                 )
                 current_session_id = None
     if not current_session_id:
-        raise HTTPException(
-            status_code=401,
-            detail={"code": "AUTH004", "toast": True},
-        )
+        raise HTTPException(status_code=401, detail={"code": "AUTH004", "toast": True})
     other_sessions = (
         await UserSession.filter(user_id=user.id).exclude(id=current_session_id).all()
     )
@@ -195,14 +199,11 @@ async def close_all_sessions_of_user(
     user_id: int,
     request: Request,
     response: Response,
-    current_admin: Users = Depends(get_current_admin_user),
+    current_admin: Users = Depends(require_permission(7)),
 ):
     user = await Users.filter(id=user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=404,
-            detail={"code": "3x01a", "toast": True},
-        )
+        raise HTTPException(status_code=404, detail={"code": "3x01a", "toast": True})
     sessions = await UserSession.filter(user_id=user_id).all()
     for session in sessions:
         await session.delete()
@@ -211,11 +212,28 @@ async def close_all_sessions_of_user(
     }
 
 
+@authRouter.get("/permissions", response_model=list[int])
+async def get_my_permissions(user: Users = Depends(get_current_user_or_master)):
+    return await get_effective_permissions(user)
+
+
 @authRouter.post("/refresh")
 async def refresh_tokens(request: Request, response: Response):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
         raise HTTPException(status_code=401, detail={"code": "AUTH005", "toast": True})
+
+    payload = validate_refresh_token_format(refresh_token)
+    if payload.get("is_master"):
+        master_session_id = str(uuid4())
+        new_access, _ = create_access_token(
+            MASTER_USER_ID, master_session_id, is_master=True
+        )
+        new_refresh, _, _ = create_refresh_token(
+            MASTER_USER_ID, master_session_id, is_master=True
+        )
+        set_token_cookies(response, new_access, new_refresh)
+        return {"details": "Tokens renovados"}
     try:
         payload = validate_refresh_token_format(refresh_token)
         user_id = int(payload["sub"])

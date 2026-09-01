@@ -25,7 +25,7 @@ import {
 import toast from "solid-toast";
 
 export const UsersList = () => {
-  const { user } = useAuth();
+  const { hasPermission, hasAnyPermission } = useAuth();
   const [search, setSearch] = createSignal("");
   const [isActive, setIsActive] = createSignal<boolean | undefined>(undefined);
   const [isAdmin, setIsAdmin] = createSignal<boolean | undefined>(undefined);
@@ -172,7 +172,7 @@ export const UsersList = () => {
 
   return (
     <Show
-      when={user()?.is_admin}
+      when={hasPermission(1)}
       fallback={
         <div class="alert alert-error shadow-sm">
           Requiere permisos de administrador.
@@ -188,16 +188,19 @@ export const UsersList = () => {
             value={search()}
             onInput={(e) => setSearch(e.currentTarget.value)}
           />
-          <button
-            type="button"
-            class="btn btn-primary btn-sm text-white w-full sm:w-auto gap-1"
-            onClick={() => {
-              reset(addFormStore);
-              setShowAddModal(true);
-            }}
-          >
-            <AiOutlineUserAdd size={16} /> Crear
-          </button>
+          {}
+          <Show when={hasPermission(2)}>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm text-white w-full sm:w-auto gap-1"
+              onClick={() => {
+                reset(addFormStore);
+                setShowAddModal(true);
+              }}
+            >
+              <AiOutlineUserAdd size={16} /> Crear
+            </button>
+          </Show>
         </div>
 
         <div class="overflow-x-auto">
@@ -211,14 +214,14 @@ export const UsersList = () => {
               </tr>
             </thead>
             <tbody>
-              <Show when={users.loading}>
+              <Show when={showLoading()}>
                 <tr>
                   <td colspan="4" class="text-center">
                     Cargando...
                   </td>
                 </tr>
               </Show>
-              <For each={users()}>
+              <For each={users.latest}>
                 {(u) => (
                   <tr>
                     <td class="font-bold">{u.username}</td>
@@ -235,55 +238,71 @@ export const UsersList = () => {
                       >
                         {u.is_admin ? "Admin" : "User"}
                       </span>
+                      <Show when={u.role_id}>
+                        <span class="badge badge-sm badge-outline ml-1">
+                          {roles()?.find((r) => r.id === u.role_id)?.name || `Rol #${u.role_id}`}
+                        </span>
+                      </Show>
                     </td>
                     <td class="flex flex-wrap gap-1">
-                      <button
-                        class="btn btn-square btn-xs btn-outline"
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setValues(editFormStore, {
-                            username: u.username,
-                            is_active: u.is_active,
-                            is_admin: u.is_admin,
-                          });
-                          setShowEditModal(true);
-                        }}
-                        title="Editar"
-                      >
-                        <AiOutlineEdit size={14} />
-                      </button>
-                      <button
-                        class="btn btn-square btn-xs btn-outline"
-                        onClick={() => {
-                          setSelectedUser(u);
-                          reset(passwordFormStore);
-                          setShowPasswordModal(true);
-                        }}
-                        title="Password"
-                      >
-                        <AiOutlineKey size={14} />
-                      </button>
-                      <button
-                        class={`btn btn-square btn-xs ${u.is_active ? "btn-warning" : "btn-success"}`}
-                        onClick={() => handleToggleActive(u)}
-                        title={u.is_active ? "Deshabilitar" : "Habilitar"}
-                      >
-                        <AiOutlinePoweroff size={14} />
-                      </button>
-                      <button
-                        class="btn btn-square btn-xs btn-error text-white"
-                        onClick={() => handleForceDisconnect(u)}
-                        title="Cerrar sesiones de este usuario"
-                      >
-                        <AiOutlinePoweroff size={14} />
-                      </button>
-                      <button
-                        class="btn btn-square btn-xs btn-error text-white"
-                        onClick={() => handleDeleteUser(u)}
-                        title="Eliminar"
-                      >
-                        <AiOutlineDelete size={14} />
-                      </button>
+                      {}
+                      <Show when={hasPermission(3)}>
+                        <button
+                          class="btn btn-square btn-xs btn-outline"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setValues(editFormStore, {
+                              username: u.username,
+                              is_active: u.is_active,
+                              role_id: u.role_id,
+                            });
+                            setShowEditModal(true);
+                          }}
+                          title="Editar"
+                        >
+                          <AiOutlineEdit size={14} />
+                        </button>
+                      </Show>
+                      <Show when={hasPermission(6)}>
+                        <button
+                          class="btn btn-square btn-xs btn-outline"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            reset(passwordFormStore);
+                            setShowPasswordModal(true);
+                          }}
+                          title="Password"
+                        >
+                          <AiOutlineKey size={14} />
+                        </button>
+                      </Show>
+                      <Show when={hasPermission(4)}>
+                        <button
+                          class={`btn btn-square btn-xs ${u.is_active ? "btn-warning" : "btn-success"}`}
+                          onClick={() => handleToggleActive(u)}
+                          title={u.is_active ? "Deshabilitar" : "Habilitar"}
+                        >
+                          <AiOutlinePoweroff size={14} />
+                        </button>
+                      </Show>
+                      <Show when={hasPermission(7)}>
+                        <button
+                          class="btn btn-square btn-xs btn-error text-white"
+                          onClick={() => handleForceDisconnect(u)}
+                          title="Cerrar sesiones de este usuario"
+                        >
+                          <AiOutlinePoweroff size={14} />
+                        </button>
+                      </Show>
+                      <Show when={hasPermission(5)}>
+                        <button
+                          class="btn btn-square btn-xs btn-error text-white"
+                          onClick={() => handleDeleteUser(u)}
+                          title="Eliminar"
+                        >
+                          <AiOutlineDelete size={14} />
+                        </button>
+                      </Show>
                     </td>
                   </tr>
                 )}
@@ -383,24 +402,28 @@ export const UsersList = () => {
                     </label>
                   )}
                 </EditField>
-                <EditField name="is_admin" type="boolean">
-                  {(field, props) => (
-                    <label class="label cursor-pointer gap-2 justify-start">
-                      <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary checkbox-sm"
-                        checked={field.value ?? false}
-                        onChange={(e) => props.onChange(e)}
-                      />
-                      <span class="label-text">Administrador</span>
-                    </label>
+                <EditField name="role_id" type="number">
+                  {(field) => (
+                    <div class="mt-2">
+                      <label class="label-text">Rol (opcional)</label>
+                      <select
+                        class="select select-bordered select-sm w-full"
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const v = e.currentTarget.value;
+                          setValue(editFormStore, "role_id", v ? Number(v) : null);
+                        }}
+                      >
+                        <option value="">Sin rol</option>
+                        <For each={roles()}>
+                          {(role) => <option value={role.id}>{role.name}</option>}
+                        </For>
+                      </select>
+                    </div>
                   )}
                 </EditField>
                 <div class="modal-action">
-                  <button
-                    type="submit"
-                    class="btn btn-primary btn-sm text-white"
-                  >
+                  <button type="submit" class="btn btn-primary btn-sm text-white">
                     Actualizar
                   </button>
                   <button

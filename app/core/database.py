@@ -9,6 +9,7 @@ TORTOISE_ORM = {
                 "models.users",
                 "models.user_sessions",
                 "models.audit_logs",
+                "models.roles",
             ],
             "default_connection": "default",
         }

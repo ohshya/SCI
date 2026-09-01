@@ -9,9 +9,9 @@ from pydantic import BaseModel, field_validator
 
 from core.error_codes import ERROR_CODES, GENERIC_MESSAGES
 from core.logger import LOGS_OPTIONS
+from core.permissions import require_permission
 from models.audit_logs import AuditLog
 from models.users import Users
-from security.auth import get_current_admin_user
 
 auditRouter = APIRouter(tags=["Audit"], prefix="/audit")
 
@@ -56,7 +56,7 @@ class SortOrder(str, Enum):
 
 @auditRouter.get("/logs", response_model=Page[LogResponse])
 async def get_logs(
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(8)),
     filters: LogFilter = Depends(),
     sort_by: str = "created_at",
     sort_order: SortOrder = SortOrder.DESC,
@@ -88,7 +88,7 @@ async def get_logs(
 
 
 @auditRouter.get("/errors")
-async def list_error_codes(current_user: Users = Depends(get_current_admin_user)):
+async def list_error_codes(current_user: Users = Depends(require_permission(9))):
     result = []
     for code, info in ERROR_CODES.items():
         result.append(
@@ -107,7 +107,7 @@ async def list_error_codes(current_user: Users = Depends(get_current_admin_user)
 @auditRouter.get("/logs/{log_id}/verify")
 async def verify_log_integrity(
     log_id: int,
-    current_user: Users = Depends(get_current_admin_user),
+    current_user: Users = Depends(require_permission(10)),
 ):
     log = await AuditLog.filter(id=log_id).first()
     if not log:

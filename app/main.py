@@ -10,6 +10,7 @@ from core.exceptions import exception_handler
 from core.settings import settings
 from routes.audit import auditRouter
 from routes.auth import authRouter
+from routes.roles import rolesRouter
 from routes.system import systemRouter
 from routes.users import usersRouter
 
@@ -52,5 +53,6 @@ api_router = APIRouter(prefix="/api")
 api_router.include_router(usersRouter)
 api_router.include_router(authRouter)
 api_router.include_router(auditRouter)
+api_router.include_router(rolesRouter)
 api_router.include_router(systemRouter)
 app.include_router(api_router)

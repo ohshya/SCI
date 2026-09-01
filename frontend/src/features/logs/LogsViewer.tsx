@@ -1,20 +1,32 @@
-import { createResource, For, Show, createSignal } from 'solid-js'
+import { createResource, For, Show, createSignal, createEffect, on, onCleanup } from 'solid-js'
 import { LogsApi } from '@/api/logs.api'
 import { useAuth } from '@/context/auth'
 import { formatDate } from '@/utils/fucs'
 
 export function LogsViewer() {
-  const { user } = useAuth()
+  const { hasPermission } = useAuth()
   const [page, setPage] = createSignal(1)
   const [logs] = createResource(
     () => ({ page: page(), size: 10 }),
     LogsApi.getLogs
   )
 
+  const [showLoading, setShowLoading] = createSignal(false)
+  let loadingTimer: ReturnType<typeof setTimeout> | undefined
+  createEffect(on(() => logs.loading, (isLoading) => {
+    clearTimeout(loadingTimer)
+    if (isLoading) {
+      loadingTimer = setTimeout(() => setShowLoading(true), 250)
+    } else {
+      setShowLoading(false)
+    }
+  }))
+  onCleanup(() => clearTimeout(loadingTimer))
+
   return (
     <Show
-      when={user()?.is_admin}
-      fallback={<div class='alert alert-warning'>Acceso denegado a Logs.</div>}
+      when={hasPermission(8)}
+      fallback={<div class='alert alert-warning'>No tienes permisos para ver los logs.</div>}
     >
       <div class='overflow-x-auto w-full'>
         <table class='table table-sm table-zebra w-full'>
@@ -28,14 +40,14 @@ export function LogsViewer() {
             </tr>
           </thead>
           <tbody>
-            <Show when={logs.loading}>
+            <Show when={showLoading()}>
               <tr>
                 <td colspan='5' class='text-center'>
                   Cargando logs...
                 </td>
               </tr>
             </Show>
-            <For each={logs()?.items}>
+            <For each={logs.latest?.items}>
               {log => (
                 <tr>
                   <td>{log.id}</td>
@@ -61,18 +73,17 @@ export function LogsViewer() {
             «
           </button>
           <button class='join-item btn btn-sm no-animation'>
-            Página {page()} de {logs()?.pages || 1}
+            Página {page()} de {logs.latest?.pages || 1}
           </button>
           <button
             class='join-item btn btn-sm'
             onClick={() => setPage(p => p + 1)}
-            disabled={page() === (logs()?.pages || 1)}
+            disabled={page() === (logs.latest?.pages || 1)}
           >
             »
           </button>
         </div>
       </div>
-      {logs() && <pre>{JSON.stringify(logs(), null, 2)}</pre>}
     </Show>
   )
 }

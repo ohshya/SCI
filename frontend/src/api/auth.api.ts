@@ -29,3 +29,8 @@ export async function deleteOtherAllSessions() {
 	const response = await api.post("/auth/sessions/all");
 	return response.data;
 }
+
+export async function fetchMyPermissions(): Promise<number[]> {
+	const response = await api.get("/auth/permissions");
+	return response.data;
+}

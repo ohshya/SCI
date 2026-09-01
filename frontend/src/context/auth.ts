@@ -1,4 +1,4 @@
-import { fetchMe, logoutRequest } from "@/api/auth.api";
+import { fetchMe, fetchMyPermissions, logoutRequest } from "@/api/auth.api";
 import { createSignal } from "solid-js";
 
 type User = {
@@ -9,6 +9,7 @@ type User = {
 };
 
 const [user, setUser] = createSignal<User | null>(null);
+const [permissions, setPermissions] = createSignal<number[]>([]);
 const [loading, setLoading] = createSignal<boolean>(true);
 
 export async function refreshUser() {
@@ -16,8 +17,11 @@ export async function refreshUser() {
 	try {
 		const r = await fetchMe();
 		setUser(r);
+		const perms = await fetchMyPermissions();
+		setPermissions(perms);
 	} catch (e) {
 		setUser(null);
+		setPermissions([]);
 	} finally {
 		setLoading(false);
 	}
@@ -33,6 +37,7 @@ export async function logoutUser() {
 		pendingLogout = true;
 	} finally {
 		setUser(null);
+		setPermissions([]);
 	}
 }
 
@@ -41,7 +46,7 @@ export async function retryPendingLogout() {
 	try {
 		await logoutRequest();
 		pendingLogout = false;
-  } catch {
+	} catch {
 
 	}
 }
@@ -54,6 +59,10 @@ export function useAuth() {
 	return {
 		user: () => user(),
 		setUser: (u: User | null) => setUser(u),
+		permissions: () => permissions(),
+		hasPermission: (id: number) => user()?.is_admin || permissions().includes(id),
+		hasAnyPermission: (ids: number[]) =>
+			user()?.is_admin || ids.some((id) => permissions().includes(id)),
 		loading: () => loading(),
 		refreshUser,
 		logoutUser,

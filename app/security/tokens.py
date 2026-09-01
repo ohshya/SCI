@@ -3,11 +3,14 @@ from typing import Any
 from uuid import uuid4
 
 import jwt
-from core.settings import TIMEZONE, settings
 from fastapi import HTTPException
 
+from core.settings import TIMEZONE, settings
 
-def create_access_token(user_id: int, session_id: str) -> tuple[str, str]:
+
+def create_access_token(
+    user_id: int, session_id: str, is_master: bool = False
+) -> tuple[str, str]:
     jti = str(uuid4())
     payload = {
         "sub": str(user_id),
@@ -15,6 +18,7 @@ def create_access_token(user_id: int, session_id: str) -> tuple[str, str]:
         "type": "access",
         "iss": settings.domain,
         "session_id": session_id,
+        "is_master": is_master,
         "iat": datetime.now(TIMEZONE),
         "exp": datetime.now(TIMEZONE) + timedelta(minutes=settings.access_expire),
     }
@@ -22,7 +26,9 @@ def create_access_token(user_id: int, session_id: str) -> tuple[str, str]:
     return token, jti
 
 
-def create_refresh_token(user_id: int, session_id: str) -> tuple[str, str, datetime]:
+def create_refresh_token(
+    user_id: int, session_id: str, is_master: bool = False
+) -> tuple[str, str, datetime]:
     jti = str(uuid4())
     expires = datetime.now(TIMEZONE) + timedelta(days=settings.refresh_expire)
     payload = {
@@ -31,6 +37,7 @@ def create_refresh_token(user_id: int, session_id: str) -> tuple[str, str, datet
         "type": "refresh",
         "iss": settings.domain,
         "session_id": session_id,
+        "is_master": is_master,
         "iat": datetime.now(TIMEZONE),
         "exp": expires,
     }
