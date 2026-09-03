@@ -7,7 +7,7 @@ import { SystemTester } from "@/features/system/SystemTester";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserProfile } from "@/features/auth/UserProfile";
 import { AiOutlineLogout } from "solid-icons/ai";
-import { createSignal, Match, Show, Switch } from "solid-js";
+import { createSignal, ErrorBoundary, Match, Show, Switch } from "solid-js";
 
 export default function Dashboard() {
   const { user, logoutUser, hasPermission, hasAnyPermission } = useAuth();
@@ -61,24 +61,37 @@ export default function Dashboard() {
           </Show>
         </div>
 
-        <Switch>
-          <Match when={activeTab() === 1}>
-            <UserProfile />
-          </Match>
-          <Match when={activeTab() === 2}>
-            <SystemTester />
-          </Match>
-          <Match when={activeTab() === 3 && hasAnyPermission([1, 2, 3, 4, 5, 6, 7])}>
-            <UsersList />
-            <SessionsList />
-          </Match>
-          <Match when={activeTab() === 4 && hasPermission(8)}>
-            <LogsViewer />
-          </Match>
-          <Match when={activeTab() === 5 && hasPermission(11)}>
-            <RolesList />
-          </Match>
-        </Switch>
+        <ErrorBoundary
+          fallback={(err, reset) => (
+            <div class="alert alert-error shadow-sm flex flex-col items-start gap-2">
+              <span>
+                Ocurrió un error al cargar esta pestaña: {err?.message ?? "Error desconocido"}
+              </span>
+              <button class="btn btn-sm" onClick={reset}>
+                Reintentar
+              </button>
+            </div>
+          )}
+        >
+          <Switch>
+            <Match when={activeTab() === 1}>
+              <UserProfile />
+            </Match>
+            <Match when={activeTab() === 2}>
+              <SystemTester />
+            </Match>
+            <Match when={activeTab() === 3 && hasAnyPermission([1, 2, 3, 4, 5, 6, 7])}>
+              <UsersList />
+              <SessionsList />
+            </Match>
+            <Match when={activeTab() === 4 && hasPermission(8)}>
+              <LogsViewer />
+            </Match>
+            <Match when={activeTab() === 5 && hasPermission(11)}>
+              <RolesList />
+            </Match>
+          </Switch>
+        </ErrorBoundary>
       </main>
     </div>
   );

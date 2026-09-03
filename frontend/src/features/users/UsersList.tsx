@@ -5,7 +5,7 @@ import {
   createResource,
   createEffect,
 } from "solid-js";
-import { createForm, setValues, reset } from "@modular-forms/solid";
+import { createForm, setValues, setValue, reset } from "@modular-forms/solid";
 import { useAuth } from "@/context/auth";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Input } from "@/components/ui/Input";
@@ -22,6 +22,7 @@ import {
   type UserCreate,
   type UserUpdate,
 } from "@/api/users.api";
+import { RolesApi } from "@/api/roles.api";
 import toast from "solid-toast";
 
 export const UsersList = () => {
@@ -40,6 +41,10 @@ export const UsersList = () => {
     () => ({ search: search(), is_active: isActive(), is_admin: isAdmin() }),
     UsersApi.getUsers,
   );
+
+  const [roles] = createResource(RolesApi.getRoles);
+
+  const showLoading = () => users.loading;
 
   createEffect(() => {
     refetch();
